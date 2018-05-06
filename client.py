@@ -1,5 +1,5 @@
 import socket
-
+#function to convert size to length seven
 def length_to_seven(size):
 	size='0'*(7-len(size))+ size
 	return size
@@ -9,11 +9,12 @@ username= input("Username:")
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print("socket created")
 print("connecting to server.....")
-s.connect(('192.168.43.50',4061))
+s.connect(('192.168.43.50',6222))
 print("Now you are connected to server,Start the communication.")
 
 #while True:
-
+#msg1 to take input path
+#msg2 to take input (type_of_regression learning_rate_alpha  lambda)  
 msg1=input()
 msg2=input()
 file_to_send = open(msg1, 'rb')
