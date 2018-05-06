@@ -14,7 +14,7 @@ def rec_whole_size(sock, size):
 	return array
 
 
-def sigmoid_logistic(X,theta):
+def hypothesis_logistic(X,theta):
 	z=X.dot(theta)
 	return (1 / (1 + np.exp(-z)))
 
@@ -42,12 +42,35 @@ def cost_linear(Y,y,m):
 	return J
 
 
+def cost_logistic(y,Y,m):
+	t=-1/m
+	l=np.log10(Y)
+	b=np.ones((m,1),dtype=int)
+	p=np.subtract(b,y)
+	q=np.subtract(b,l)
+	J=t*((np.multiply(y,l) + np.multiply(p,q)).sum())
+	return J
+
+
+
 def gradient_descent_linear(X,Y,y,alpha,theta,m,n):
 	p=int(alpha)/m
 	grad=np.matrix([p*(np.subtract(Y,y).sum())])
 	for i in range(1,n):
 		for j in range(0,m):
 			P=p*(np.multiply(np.subtract(Y,y),X[:,i]).sum())
+		grad=np.vstack((grad,[P]))
+	actual_theta=np.subtract(theta,grad)
+	return actual_theta
+
+
+
+def gradient_descent_logistic(X,Y,y,alpha,theta,m,n):
+	
+	grad=np.matrix([float(alpha)*(np.subtract(Y,y).sum())])
+	for i in range(1,n):
+		for j in range(0,m):
+			P=float(alpha)*(np.multiply(np.subtract(Y,y),X[:,i]).sum())
 		grad=np.vstack((grad,[P]))
 	actual_theta=np.subtract(theta,grad)
 	return actual_theta
@@ -87,15 +110,18 @@ def rec_from_client(client_sock):
 
 
 		#if n_value <= 5 & type_r is 'logistic':
-		X,y,theta=create_matrix_from_dataset(uname,m_value,n_value)
-		Y=sigmoid_logistic(X,theta)
-		cost_logistic()
+		#X,y,theta=create_matrix_from_dataset(uname,m_value,n_value)
+		#Y=hypothesis_logistic(X,theta)
+		#J=cost_logistic(y,Y,m_value)
+		#actual_theta=gradient_descent_logistic(X,Y,y,alpha,theta,m_value,n_value)
 
 
 
 		
-		#if n_value > 5 & l[1]='logistic':
-		#if n_value > 5 & l[1]='linear':	
+		#if n_value > 5 & l[1]='linear':
+		
+
+                #if n_value > 5 & l[1]='logistic':	
 
 
 
