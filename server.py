@@ -27,18 +27,20 @@ def create_matrix_from_dataset(filename,m,n):
 	X=np.delete(matrix,n,1)
 	y=np.delete(matrix,np.s_[0:n],1)
 	theta=np.ones((n,1),dtype=int)
+	#print(X,y,theta)	
 	return X,y,theta
 
 
 def hypothesis_linear(X,theta):
-	Y=X.dot(theta)
+	Y=np.dot(X,theta)
+	#print(Y)	
 	return Y
 
 
 def cost_linear(Y,y,m):
 	t_m= 2*m
-	b=np.ones((),dtype=int)
 	J=(1/t_m)*((np.square(np.subtract(Y,y))).sum())
+	#print(J)	
 	return J
 
 
@@ -51,29 +53,54 @@ def cost_logistic(y,Y,m):
 	J=t*((np.multiply(y,l) + np.multiply(p,q)).sum())
 	return J
 
+def cost_regularized_linear(y,Y,m,theta,lambd):
+	t_m=2*m
+	a=(1/t_m*(np.square(np.subtract(Y,y)))).sum()	
+	b=((float(lambd)/t_m)*(np.square(theta))).sum()
+	J=a+b
+	return J
 
-
-def gradient_descent_linear(X,Y,y,alpha,theta,m,n):
-	p=int(alpha)/m
-	grad=np.matrix([p*(np.subtract(Y,y).sum())])
-	for i in range(1,n):
-		for j in range(0,m):
-			P=p*(np.multiply(np.subtract(Y,y),X[:,i]).sum())
-		grad=np.vstack((grad,[P]))
-	actual_theta=np.subtract(theta,grad)
-	return actual_theta
-
-
-
-def gradient_descent_logistic(X,Y,y,alpha,theta,m,n):
+def gradient_descent_linear(X,y,alpha,theta,m,n):
+	p=float(alpha)/m
+	for k in range(1,3):	
+		Y=hypothesis_linear(X,theta)
+		gr=np.matrix(p*(np.dot(np.transpose(Y-y) , X)))
+		theta=theta-np.transpose(gr)
+		print(theta)
+	print(theta)		
 	
-	grad=np.matrix([float(alpha)*(np.subtract(Y,y).sum())])
-	for i in range(1,n):
-		for j in range(0,m):
-			P=float(alpha)*(np.multiply(np.subtract(Y,y),X[:,i]).sum())
-		grad=np.vstack((grad,[P]))
-	actual_theta=np.subtract(theta,grad)
-	return actual_theta
+def gradient_descent_linear_regularization(X,y,alpha,lambd,theta,m,n):
+	for k in range(1,201):
+		p=float(alpha)/m
+		q=float(lambd) *p	
+		Y=hypothesis_linear(X,theta)	
+		grad=np.matrix([p*(np.subtract(Y,y).sum())])
+		for i in range(1,n):
+			for j in range(0,m):
+				P=p*(np.multiply(np.subtract(Y,y),X[:,i]).sum())
+			grad=np.vstack((grad,[P]))
+		theta=np.subtract(theta*(1-q),grad)
+	print(theta)	
+
+
+
+
+
+
+
+def gradient_descent_logistic(X,y,alpha,theta,m,n):
+	for k in range(1,201):
+		Y=hypothesis_logistic(X,theta)
+		grad=np.matrix([float(alpha)*(np.subtract(Y,y).sum())])
+		for i in range(1,n):
+			for j in range(0,m):
+				P=float(alpha)*(np.multiply(np.subtract(Y,y),X[:,i]).sum())
+			grad=np.vstack((grad,[P]))
+		theta=np.subtract(theta,grad)
+	return theta
+
+
+
 
 
 #recieve input sent by client
@@ -90,38 +117,44 @@ def rec_from_client(client_sock):
 		data=m.encode('utf-8')
 		uname=l[0]
 		alpha=l[3]
+		lambd=l[4]
 		type_r=l[2]
 		fp = open(uname,'wb')
 		fp.write(data)
 		fp.close()
+
 		with open(uname,"r") as f:
 			m_value=sum(1 for _ in f)
 		f=open(uname)
 		lines=f.readlines()
 		count=lines[0].split(',')
 		n_value=len(count)
+		print(m_value,n_value)
 		print("file recieved")
 
 		#if n_value <= 5 & type_r is 'linear':
-		#	X,y,theta=create_matrix_from_dataset(uname,m_value,n_value)
-		#	Y=hypothesis_linear(X,theta)
-		#	J=cost_linear(Y,y,m_value)
-		#	actual_theta=gradient_descent_linear(X,Y,y,alpha,theta,m_value,n_value)
+		X,y,theta=create_matrix_from_dataset(uname,m_value,n_value)
+		Y=hypothesis_linear(X,theta)
+		J=cost_linear(Y,y,m_value)
+		theta=gradient_descent_linear(X,y,alpha,theta,m_value,n_value)
 
 
 		#if n_value <= 5 & type_r is 'logistic':
 		#X,y,theta=create_matrix_from_dataset(uname,m_value,n_value)
 		#Y=hypothesis_logistic(X,theta)
 		#J=cost_logistic(y,Y,m_value)
-		#actual_theta=gradient_descent_logistic(X,Y,y,alpha,theta,m_value,n_value)
+		#theta=gradient_descent_logistic(X,y,alpha,theta,m_value,n_value)
 
 
-
-		
 		#if n_value > 5 & l[1]='linear':
-		
+		#X,y,theta=create_matrix_from_dataset(uname,m_value,n_value)
+		#Y=hypothesis_linear(X,theta)
+		#J=cost_regularized_linear(y,Y,m_value,theta,lambd)		
+		#theta=gradient_descent_linear_regularization(X,y,alpha,lambd,theta,m_value,n_value)
+                
 
-                #if n_value > 5 & l[1]='logistic':	
+
+		#if n_value > 5 & l[1]='logistic':	
 
 
 
@@ -139,7 +172,7 @@ def rec_from_client(client_sock):
 
 print("Server socket")
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serversocket.bind(('192.168.43.50', 6222))
+serversocket.bind(('192.168.43.50', 8323))
 print("socket for accepting the connection",serversocket)
 serversocket.listen(10)
 while True:

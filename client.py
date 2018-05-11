@@ -9,7 +9,7 @@ username= input("Username:")
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print("socket created")
 print("connecting to server.....")
-s.connect(('192.168.43.50',6222))
+s.connect(('192.168.43.50',8323))
 print("Now you are connected to server,Start the communication.")
 
 #while True:
